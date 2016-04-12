@@ -2,41 +2,82 @@ import scala.Predef;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 
 /**
  * Created by greghuang on 4/12/16.
  */
 public class ImageConvertor {
-    public static void main(String[] args) {
+    static StringBuilder sb = new StringBuilder();
+    static Map<String, Integer> labelData;
+
+    public static void main(String[] args) throws IOException {
         if (args.length == 0 || args.length < 2) {
-            System.out.println("No input data folder");
+            System.out.println("Usage: training_file_folder output_file [label_file]");
             System.exit(1);
         }
 
+        if (args.length == 3) {
+            final String labelFile = args[2];
+            labelData = new HashMap<String, Integer>();
+            loadLabelData(labelFile, labelData);
+        }
+
+        final String outputFile = args[1];
         File dataFolder = null;
-        File outFolder = null;
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+
         try {
             dataFolder = new File(args[0]);
-            outFolder = new File(args[1]);
             String[] files = dataFolder.list();
+
+            fw = new FileWriter(outputFile);
+            bw = new BufferedWriter(fw);
+
             int cnt = 0;
             for (String file : files) {
                 final String inFile = dataFolder.getPath() + "/" + file;
-                final String outFile = outFolder.getPath() + "/" + file + ".txt";
-                System.out.println("Input:" + inFile);
-                System.out.println("Output:" + outFile);
                 int[] txtData = loadFile(inFile);
                 if (txtData != null) {
-                    writeTextFile(outFile, txtData);
-                    System.out.println(String.format("Convert %s to %s done", inFile, outFile));
+                    writeSingleTextFile(bw, file, txtData);
+                    cnt++;
                 }
-                cnt++;
-                //if (cnt == 2) break;
+//                if (cnt == 2) break;
             }
-            System.out.println("Total files:" + cnt);
+            System.out.println(String.format("Write %d files to %s done", cnt, outputFile));
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (bw != null) bw.close();
+        }
+    }
+
+    private static void writeSingleTextFile(BufferedWriter bw, String fileName, int[] data) {
+        if (bw != null) {
+            final String sep = " ";
+            sb.setLength(0);
+            sb.append(fileName);
+
+            // insert label
+            if (labelData != null) {
+                int label = labelData.getOrDefault(fileName, -1);
+                if (label == -1) System.err.println("No label for " + fileName);
+                sb.append(sep).append(label);
+            }
+
+            for (int i = 0; i < data.length; i++) {
+                sb.append(sep).append(data[i]);
+            }
+            try {
+                bw.write(sb.toString());
+                bw.newLine();
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -46,23 +87,21 @@ public class ImageConvertor {
         try {
             fw = new FileWriter(fileName);
             bw = new BufferedWriter(fw);
-            StringBuilder sb = new StringBuilder();
+
             for (int i = 0; i < 28; i++) {
                 for (int j = 0; j < 28; j++) {
                     int index = i * 28 + j;
                     sb.append(data[index]).append(" ");
                 }
-                sb.deleteCharAt(sb.length()-1);
+                sb.deleteCharAt(sb.length() - 1);
                 bw.write(sb.toString());
                 bw.newLine();
                 sb.setLength(0);
             }
             bw.flush();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (bw != null) bw.close();
         }
     }
@@ -78,14 +117,33 @@ public class ImageConvertor {
                 data[i++] = c;
             }
             return data;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (fin != null) fin.close();
         }
         return null;
     }
 
+    private static void loadLabelData(String fileName, Map<String, Integer> labelMap) {
+        FileReader fr = null;
+        try {
+            fr = new FileReader(fileName);
+            BufferedReader br = new BufferedReader(fr);
+            boolean run = true;
+            do {
+                String line = br.readLine();
+                if (line != null) {
+                    String[] data = line.split(",");
+                    labelMap.putIfAbsent(data[0].trim(), Integer.parseInt(data[1]));
+                } else
+                    run = false;
+            } while (run);
+            br.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
