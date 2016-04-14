@@ -1,10 +1,7 @@
-import scala.Predef;
-
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
+
 
 /**
  * Created by greghuang on 4/12/16.
@@ -42,7 +39,8 @@ public class ImageConvertor {
                 final String inFile = dataFolder.getPath() + "/" + file;
                 int[] txtData = loadFile(inFile);
                 if (txtData != null) {
-                    writeSingleTextFile(bw, file, txtData);
+                    //writeSingleTextFile(bw, file, txtData);
+                    writeFileInLibsvm(bw, file, txtData);
                     cnt++;
                 }
 //                if (cnt == 2) break;
@@ -52,6 +50,33 @@ public class ImageConvertor {
             e.printStackTrace();
         } finally {
             if (bw != null) bw.close();
+        }
+    }
+
+    private static void writeFileInLibsvm(BufferedWriter bw, String fileName, int[] data) {
+        if (bw != null) {
+            final String sep = " ";
+            sb.setLength(0);
+
+            // insert label
+            if (labelData != null) {
+                int label = labelData.getOrDefault(fileName, -1);
+                if (label == -1) System.err.println("No label for " + fileName);
+                sb.append(label);
+            }
+            else throw new RuntimeException("No label data");
+
+            for (int i = 0; i < data.length; i++) {
+                if (data[i] != 0)
+                    sb.append(sep).append(String.format("%d:%d", i+1, data[i]));
+            }
+            try {
+                bw.write(sb.toString());
+                bw.newLine();
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
