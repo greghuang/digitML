@@ -1,6 +1,7 @@
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.clustering.KMeans
+import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.io.Source
@@ -23,9 +24,6 @@ object MyFirstModel extends  App {
     vectorBuf += t
   })
 
-  val seq = vectorBuf.toSeq
-  println(seq.apply(0))
-
   val sparkConf = new SparkConf(false)
     .setMaster("local[*]")
     .setAppName("MySpark")
@@ -35,9 +33,28 @@ object MyFirstModel extends  App {
   val sc = new SparkContext(sparkConf)
   val sqlCtx = new SQLContext(sc)
 
-  val data = sqlCtx.createDataFrame(seq).toDF("label","features").cache()
+  val data = sqlCtx.createDataFrame(vectorBuf.toSeq).toDF("label","features").cache()
   val Array(trainingData, testingData) = data.randomSplit(Array(0.01, 0.7))
-  trainingData.select("label").show(100)
+
+  data.printSchema()
+
+  val data2 = Seq(
+    Vectors.dense(0.0, 1.0, -2.0, 3.0),
+    Vectors.dense(-1.0, 2.0, 4.0, -7.0),
+    Vectors.dense(14.0, -2.0, -5.0, 1.0))
+
+  val df = sqlCtx.createDataFrame(data2.map(Tuple1.apply)).toDF("features")
+
+  df.printSchema()
+  df.select("features").collect().foreach(println)
+
+  //  val binarizer = new Binarizer()
+//    .setInputCol("features")
+//    .setOutputCol("binary_feat")
+//    .setThreshold(10)
+//
+//  val binData = binarizer.transform(trainingData)
+//  val binFeatures = binData.select("binary_feat").show(1)
 
 //  val kmeans = new KMeans().setK(10).setMaxIter(10).setFeaturesCol("features").setPredictionCol("prediction")
 //  val model = kmeans.fit(trainingData)

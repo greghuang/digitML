@@ -1,3 +1,6 @@
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +42,8 @@ public class ImageConvertor {
                 final String inFile = dataFolder.getPath() + "/" + file;
                 int[] txtData = loadFile(inFile);
                 if (txtData != null) {
-                    //writeSingleTextFile(bw, file, txtData);
-                    writeFileInLibsvm(bw, file, txtData);
+                    writeSingleTextFile(bw, file, txtData);
+                    //writeFileInLibsvm(bw, file, txtData);
                     cnt++;
                 }
 //                if (cnt == 2) break;
