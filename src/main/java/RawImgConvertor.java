@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by greghuang on 4/12/16.
  */
-public class ImageConvertor {
+public class RawImgConvertor {
     static StringBuilder sb = new StringBuilder();
     static Map<String, Integer> labelData;
 
