@@ -1,13 +1,15 @@
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 
 /**
  * Created by greghuang on 4/12/16.
+ *
+ * libsvm: "data/train/all/" "data/output/training_all_libsvm.txt" "data/train.csv"
  */
 public class RawImgConvertor {
     static StringBuilder sb = new StringBuilder();
@@ -34,16 +36,22 @@ public class RawImgConvertor {
             dataFolder = new File(args[0]);
             String[] files = dataFolder.list();
 
-            fw = new FileWriter(outputFile);
-            bw = new BufferedWriter(fw);
+            Path out = Paths.get(outputFile);
+            if (out.toFile().exists()) out.toFile().delete();
+
+            bw = Files.newBufferedWriter(out);
 
             int cnt = 0;
             for (String file : files) {
                 final String inFile = dataFolder.getPath() + "/" + file;
-                int[] txtData = loadFile(inFile);
+                Path p = Paths.get(inFile);
+                if (p.toFile().isHidden()) continue;
+
+                byte[] raw = Files.readAllBytes(p);
+                int[] txtData = ImgUtility.byteToInt(raw);
                 if (txtData != null) {
                     writeSingleTextFile(bw, file, txtData);
-                    //writeFileInLibsvm(bw, file, txtData);
+//                    writeFileInLibsvm(bw, file, txtData);
                     cnt++;
                 }
 //                if (cnt == 2) break;
@@ -71,7 +79,7 @@ public class RawImgConvertor {
 
             for (int i = 0; i < data.length; i++) {
                 if (data[i] != 0)
-                    sb.append(sep).append(String.format("%d:%d", i+1, data[i]));
+                    sb.append(sep).append(String.format("%d:%f", i+1, data[i]/255.0f));
             }
             try {
                 bw.write(sb.toString());
