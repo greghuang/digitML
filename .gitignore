@@ -2,3 +2,4 @@ data/
 .idea/
 project/
 target/
+.DS_Store
