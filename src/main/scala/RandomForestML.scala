@@ -1,18 +1,17 @@
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier}
-import org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator, RegressionEvaluator}
+import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
-import org.apache.spark.ml.regression.{DecisionTreeRegressionModel, DecisionTreeRegressor}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
-  * Created by greghuang on 4/14/16.
+  * Created by greghuang on 4/22/16.
   */
-object DecisionTreeModel extends App {
+object RandomForestML extends App {
   val sparkConf = new SparkConf(false)
     .setMaster("local[*]")
-    .setAppName("DecisionTreeModel")
+    .setAppName("RandomForestML")
     .set("spark.driver.port", "7777")
     .set("spark.driver.host", "localhost")
 
@@ -34,9 +33,10 @@ object DecisionTreeModel extends App {
 
   val Array(trainingData, testingData) = data.randomSplit(Array(0.9, 0.1), seed = 11L)
 
-  val dt = new DecisionTreeClassifier()
+  val rf = new RandomForestClassifier()
     .setLabelCol("indexedLabel")
     .setFeaturesCol("indexedFeatures")
+    .setNumTrees(10)
 
   val labelConvertor = new IndexToString()
     .setInputCol("prediction")
@@ -44,7 +44,7 @@ object DecisionTreeModel extends App {
     .setLabels(labelIndexer.labels)
 
   val piple = new Pipeline()
-    .setStages(Array(labelIndexer, featureIndexer, dt, labelConvertor))
+    .setStages(Array(labelIndexer, featureIndexer, rf, labelConvertor))
 
   val model = piple.fit(trainingData)
 
@@ -59,11 +59,6 @@ object DecisionTreeModel extends App {
 
   val accuracy = evaluator.evaluate(predictions)
   println("Test Error = " + (1.0 - accuracy))
-
-  //  println("Root Mean Squared Error (RMSE) on test data = " + rmse)
-//
-//  val treeModel = model.stages(2).asInstanceOf[DecisionTreeClassificationModel]
-//  println("Learned classification tree model:\n" + treeModel.toDebugString)
 
   sc.stop()
 }

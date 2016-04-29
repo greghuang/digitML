@@ -1,3 +1,5 @@
+package org.trend.spn;
+
 /**
  * Created by greghuang on 4/19/16.
  */

@@ -1,3 +1,5 @@
+package org.trend.spn;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -9,6 +11,8 @@ import java.nio.file.Path;
 
 /**
  * Created by greghuang on 4/18/16.
+ * bitmap -> raw: "data/processing_data/training_ripple" "data/output/new"
+ * raw -> bitmap: "data/train/all/" "data/train/bitmap"
  */
 public class BitmapLoader {
     private final int width;
@@ -33,23 +37,21 @@ public class BitmapLoader {
         bmploader.convertBitmapToRaw(inputFolder, outputFolder);
     }
 
-    public void convertBitmapToRaw(String inputFolder, String outputFolder) {
+    public void convertBitmapToRaw(String inputFolder, String outputFolder) throws IOException {
         int count = 0;
         int[] data = new int[width * height];
 
         for (String f : new File(inputFolder).list()) {
-            try {
-                if (!f.endsWith("bmp")) continue;
-                System.out.print(String.format("[%d] Converting %s to ", count++, f));
 
-                Path in = Paths.get(inputFolder + "/" + f);
-                readBitmap(in.toFile(), data);
-                Path out = Paths.get(outputFolder + "/" + f.substring(0, f.length() - 4));
-                Files.write(out, ImgUtility.intToByte(data));
-                System.out.println(out + " done");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            if (!f.endsWith("bmp")) continue;
+            System.out.print(String.format("[%d] Converting %s to ", count++, f));
+
+            Path in = Paths.get(inputFolder + "/" + f);
+            readBitmap(in.toFile(), data);
+            Path out = Paths.get(outputFolder + "/" + f.substring(0, f.length() - 4));
+            Files.write(out, ImgUtility.intToByte(data));
+            System.out.println(out + " done");
+
         }
     }
 
