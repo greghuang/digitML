@@ -16,13 +16,15 @@ object MyMLUtil {
     val source = Source.fromFile(path)
     val vectorArray = source.getLines()
       .map(_.split(" ")
-        //.drop(1)
+        .drop(1)
         .map(_.toDouble))
       .toArray
 
     var vectorBuf = new ListBuffer[(Double, Vector)]()
     vectorArray.foreach(sample => {
-      val features = sample.drop(1).map(f => f / 255.0)
+      val features = sample
+        .drop(1)
+        //.map(f => f / 255.0)
       val t = (sample.apply(0), Vectors.dense(features))
       vectorBuf += t
     })
@@ -55,5 +57,10 @@ object MyMLUtil {
     val result = block // call-by-name
     val t1 = System.nanoTime()
     (NANO.toSeconds(t1 - t0), result)
+  }
+
+  def showDataFrame(df : DataFrame): Unit = {
+    println("Schema::" + df.schema)
+    df.collect().foreach(println)
   }
 }

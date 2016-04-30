@@ -4,6 +4,7 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
+import org.trend.spn.MyMLUtil
 
 /**
   * Created by greghuang on 4/22/16.
@@ -18,7 +19,8 @@ object RandomForestML extends App {
   val sc = new SparkContext(sparkConf)
   val sqlCtx = new SQLContext(sc)
 
-  val data = sqlCtx.read.format("libsvm").load("data/output/training_all_libsvm.txt").cache()
+//  val data = sqlCtx.read.format("libsvm").load("data/output/training_all_libsvm.txt").cache()
+  val data =  MyMLUtil.loadLabelData(sqlCtx, "data/train/projectFeatures.txt").toDF("label", "features")
 
   val labelIndexer = new StringIndexer()
     .setInputCol("label")

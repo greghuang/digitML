@@ -16,8 +16,30 @@ public class ImgUtility {
         byte[] bytes = new byte[data.length];
 
         for (int i = 0; i < data.length; i++) {
-            bytes[i] = (byte)data[i];
+            bytes[i] = (byte) data[i];
         }
         return bytes;
+    }
+
+    public static int[] xFilter(int[] data, int w, int h) {
+        int[] projected = new int[w];
+
+        for (int j = 0; j < h; j++)
+            for (int i = 0; i < w; i++) {
+                if (data[j * w + i] != 0)
+                    projected[i]++;
+            }
+        return projected;
+    }
+
+    public static int[] yFilter(int[] data, int w, int h) {
+        int[] projected = new int[h];
+
+        for (int i = 0; i < w; i++)
+            for (int j = 0; j < h; j++) {
+                if (data[j * w + i] != 0)
+                    projected[j]++;
+            }
+        return projected;
     }
 }

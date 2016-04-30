@@ -1,6 +1,9 @@
 package org.trend.spn.feature
 
-import org.apache.spark.ml.feature.ExpectationScaler
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature._
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -19,14 +22,17 @@ object ExpectationML extends  App {
   val sc = new SparkContext(sparkConf)
   val sqlCtx = new SQLContext(sc)
 
-  val data = MyMLUtil.loadLabelData(sqlCtx, "data/output/train1.txt").toDF("label", "features")
+//  val data = MyMLUtil.loadLabelData(sqlCtx, "data/output/train1.txt").toDF("label", "features")
+  val data = MyMLUtil.loadLabelData(sqlCtx, "data/output/training_data.txt").toDF("label", "features")
 
-  val scaler = new ExpectationScaler().setInputCol("features").setOutputCol("scaledFeatures")
-  val scaleModel = scaler.fit(data)
-  scaleModel.transform(data).collect().foreach {
-    case Row(label: Double, features: Vector, scaleF: Vector) =>
-      println(s"($label) -> $scaleF")
-  }
+  val expect = new ExpectationScaler().setInputCol("features").setOutputCol("scaledFeatures")
+  val normalizer = new Normalizer()
+    .setInputCol("scaledFeatures")
+    .setOutputCol("normFeatures")
 
+  val p1 = new Pipeline().setStages(Array(expect, normalizer)).fit(data)
+  val transformData = p1.transform(data).select("label", "normFeatures").cache()
+//  MyMLUtil.showDataFrame(transformData)
+  transformData.write.parquet("data/train/expectData.parquet")
   sc.stop()
 }

@@ -5,11 +5,12 @@ import org.apache.spark.ml.{Estimator, Model}
 import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.util._
-import org.apache.spark.mllib.linalg.{Vector, VectorUDT, Vectors}
+import org.apache.spark.mllib.linalg.{Matrix, Matrices, Vector, VectorUDT, Vectors}
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{StructField, StructType}
+import org.trend.spn.MyMLUtil
 
 /**
   * Created by greghuang on 4/27/16.
@@ -37,12 +38,59 @@ class ExpectationScaler(override val uid: String)
   /** @group setParam */
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
+  case class ImageData(label : Double, features: Vector)
+
+  def normalizeVector(v : Vector, count: Long): Vector = {
+    val values = v.toArray
+    var i = 0
+    val size = values.length
+    while (i < size) {
+      values(i) = values(i) / count
+      i += 1
+    }
+    Vectors.dense(values)
+  }
 
   override def fit(dataset: DataFrame): ExpectationScalerModel = {
     transformSchema(dataset.schema, logging = true)
-    val input = dataset.select($(inputCol)).map { case Row(v: Vector) => v }
-    val summary = Statistics.colStats(input)
-    copyValues(new ExpectationScalerModel(uid, summary.numNonzeros, summary.count).setParent(this))
+//    val r = dataset.collect().groupBy(_.get(0))
+//      .values.foreach(f =>
+//      f.map{case Row(l: Double, v: Vector) => v}.
+//
+//    )
+//      .map{case Row(l: Double, v: Vector) => v}
+//      .flatten
+      //.foreach(println)
+    //val groups = dataset.groupBy("label").agg(max("features"))
+
+//    MyMLUtil.showDataFrame(groups)
+    dataset.show(2)
+
+    val buf = scala.collection.mutable.ArrayBuffer.empty[Vector]
+    val dinctLabel = dataset.select("label").distinct().map{_.getDouble(0)}.collect()
+    println("====Label====")
+    dinctLabel.foreach(println)
+    for (i <- dinctLabel) {
+      val input = dataset.filter(dataset.col("label").equalTo(i)).select($(inputCol))
+      val summary = Statistics.colStats(input.map { case Row(v: Vector) => v })
+      val v = normalizeVector(summary.numNonzeros, summary.count)
+      buf += v
+    }
+
+    val array = buf.toArray
+        .map(_.toArray)
+        .transpose
+
+    val mat = Matrices.dense(array(0).length, array.length, array.flatten)
+
+    // For testing
+//    val dv = Vectors.dense(1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0)
+//    println(mat)
+//    println(mat.multiply(dv))
+//    val input = dataset.select($(inputCol)).map { case Row(v: Vector) => v }
+//    val summary = Statistics.colStats(input)
+
+    copyValues(new ExpectationScalerModel(uid, mat).setParent(this))
   }
 
   override def copy(extra: ParamMap): ExpectationScaler = defaultCopy(extra)
@@ -61,8 +109,8 @@ object ExpectationScaler extends DefaultParamsReadable[ExpectationScaler] {
 
 class ExpectationScalerModel private[ml] (
       override val uid: String,
-      val numNonezeros: Vector,
-      val count: Long) extends Model[ExpectationScalerModel] with MLWritable with ExpectationScalerParam  {
+      val meanMatrix: Matrix)
+  extends Model[ExpectationScalerModel] with MLWritable with ExpectationScalerParam  {
 
   /** @group setParam */
   def setInputCol(value: String): this.type = set(inputCol, value)
@@ -72,7 +120,7 @@ class ExpectationScalerModel private[ml] (
 
 
   override def copy(extra: ParamMap): ExpectationScalerModel = {
-    val copied = new ExpectationScalerModel(uid, numNonezeros, count)
+    val copied = new ExpectationScalerModel(uid, meanMatrix)
     copyValues(copied, extra).setParent(parent)
   }
 
@@ -81,16 +129,18 @@ class ExpectationScalerModel private[ml] (
 
   override def transform(dataset: DataFrame): DataFrame = {
     val reScale = udf { (v : Vector) =>
-      val values = v.toArray
-      val nnz = numNonezeros.toArray
-      var i = 0
-      val size = values.length
-      while (i < size) {
-        val newValue = nnz(i) / count
-        values(i) = newValue
-        i += 1
-      }
-      Vectors.dense(values)
+      val expectation = meanMatrix.multiply(v)
+      expectation
+//      val values = v.toArray
+//      val nnz = numNonezeros.toArray
+//      var i = 0
+//      val size = values.length
+//      while (i < size) {
+//        val newValue = nnz(i) / count
+//        values(i) = newValue
+//        i += 1
+//      }
+//      Vectors.dense(values)
     }
     dataset.withColumn($(outputCol), reScale(col($(inputCol))))
   }

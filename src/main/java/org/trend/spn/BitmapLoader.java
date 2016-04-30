@@ -84,7 +84,7 @@ public class BitmapLoader {
         return Files.readAllBytes(aFileName);
     }
 
-    private static void readBitmap(File f, int[] buf) throws IOException {
+    public void readBitmap(File f, int[] buf) throws IOException {
         BufferedImage img = ImageIO.read(f);
         final int height = img.getHeight();
         final int width = img.getWidth();

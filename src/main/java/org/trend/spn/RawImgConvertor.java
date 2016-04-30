@@ -37,13 +37,7 @@ public class RawImgConvertor {
 
             System.out.println("Write "+inFile);
 
-            // label
-            int label = -1;
-            if (labelData != null) {
-                label = labelData.getOrDefault(file, -1);
-                if (label == -1) System.err.println("No label for " + file);
-            } else throw new RuntimeException("No label data");
-
+            int label = getLabel(file);
             byte[] raw = Files.readAllBytes(p);
             int[] txtData = ImgUtility.byteToInt(raw);
             if (txtData != null && label != -1) {
@@ -71,6 +65,15 @@ public class RawImgConvertor {
         ric.mergeImages(args[0], args[1], false);
     }
 
+    public int getLabel(String filename) {
+        int label = -1;
+        if (labelData != null) {
+            label = labelData.getOrDefault(filename, -1);
+            if (label == -1) System.err.println("No label for " + filename);
+        } else throw new RuntimeException("No label data");
+        return label;
+    }
+
     public static void writeFileInLibsvm(BufferedWriter bw, int label, int[] data) {
         if (bw != null) {
             final String sep = " ";
@@ -94,9 +97,16 @@ public class RawImgConvertor {
     }
 
     public static void writeSingleTextFile(BufferedWriter bw, int label, int[] data) {
+        writeSingleTextFile(bw, label, data, null);
+    }
+
+    public static void writeSingleTextFile(BufferedWriter bw, int label, int[] data, String filename) {
         if (bw != null) {
             final String sep = " ";
             sb.setLength(0);
+
+            if (filename != null && !filename.equals(""))
+                sb.append(filename).append(sep);
 
             // insert label
             sb.append(label);
