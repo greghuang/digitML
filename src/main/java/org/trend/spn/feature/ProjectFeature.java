@@ -16,14 +16,19 @@ import java.util.Arrays;
 /**
  * Created by greghuang on 4/30/16.
  */
-// For test
-//        int[] test = new int[]{1,1,1,0,0,0,0,0,1};
-//
-//        int[] x = ImgUtility.xFilter(test, 3, 3);
-//        int[] y = ImgUtility.yFilter(test, 3, 3);
 
 public class ProjectFeature {
     public static void main(String[] args) throws IOException {
+        // For test
+        int[] test = new int[]{1,1,1,0,0,0,0,0,1};
+
+        int[] xx = ImgUtility.xFilter(test, 3, 3);
+        int[] yy = ImgUtility.yFilter(test, 3, 3);
+
+        float[] nx = normalize(xx);
+        float[] ny = normalize(yy);
+
+        System.exit(0);
         if (args.length == 0 || args.length < 3) {
             System.out.println("Usage: bitmap_folder output_file label_file");
             System.exit(1);
@@ -47,7 +52,7 @@ public class ProjectFeature {
             bmpProcessor.readBitmap(in.toFile(), data);
             int[] x = ImgUtility.xFilter(data, 28, 28);
             int[] y = ImgUtility.yFilter(data, 28, 28);
-            int[] result = (int[])ArrayUtils.addAll(x, y);
+            float[] result = (float[])ArrayUtils.addAll(normalize(x), normalize(y));
             String filename = f.substring(0, f.length()-4);
             ric.writeSingleTextFile(bw, ric.getLabel(filename), result, filename);
         }
@@ -55,5 +60,18 @@ public class ProjectFeature {
         bw.close();
 
         System.out.println("Done");
+    }
+
+    public static float[] normalize(int[] data) {
+        int max = 0;
+        float[] norm = new float[data.length];
+
+        for (int i = 0; i < data.length ; i++) {
+            max = Math.max(max, data[i]);
+        }
+        for (int i = 0; i < data.length ; i++) {
+            norm[i] = (float)data[i] / max;
+        }
+        return norm;
     }
 }

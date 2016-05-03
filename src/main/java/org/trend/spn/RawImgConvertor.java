@@ -124,6 +124,30 @@ public class RawImgConvertor {
         }
     }
 
+    public static void writeSingleTextFile(BufferedWriter bw, int label, float[] data, String filename) {
+        if (bw != null) {
+            final String sep = " ";
+            sb.setLength(0);
+
+            if (filename != null && !filename.equals(""))
+                sb.append(filename).append(sep);
+
+            // insert label
+            sb.append(label);
+
+            for (int i = 0; i < data.length; i++) {
+                sb.append(sep).append(data[i]);
+            }
+            try {
+                bw.write(sb.toString());
+                bw.newLine();
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void writeTextFile(String fileName, int[] data) throws IOException {
         BufferedWriter bw = null;
         FileWriter fw = null;
