@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 
 /**
  * Created by greghuang on 4/27/16.
- * "data/train/test" "data/output/train1.txt" "data/train.csv"
+ * "data/train/Normalization_14x14" "data/train/featureSet/train_14_14_resample.txt" "data/train.csv"
  */
 public class ProcessPipeline {
     public static void main(String[] args) {
