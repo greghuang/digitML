@@ -64,12 +64,12 @@ class ExpectationScaler(override val uid: String)
     //val groups = dataset.groupBy("label").agg(max("features"))
 
 //    MyMLUtil.showDataFrame(groups)
-    dataset.show(2)
+//    dataset.show(2)
 
     val buf = scala.collection.mutable.ArrayBuffer.empty[Vector]
     val dinctLabel = dataset.select("label").distinct().map{_.getDouble(0)}.collect()
-    println("====Label====")
-    dinctLabel.foreach(println)
+//    println("====Label====")
+//    dinctLabel.foreach(println)
     for (i <- dinctLabel) {
       val input = dataset.filter(dataset.col("label").equalTo(i)).select($(inputCol))
       val summary = Statistics.colStats(input.map { case Row(v: Vector) => v })

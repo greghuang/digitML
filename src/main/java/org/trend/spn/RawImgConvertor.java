@@ -44,7 +44,7 @@ public class RawImgConvertor {
                 if (isLibsvm)
                     writeFileInLibsvm(bw, label, txtData);
                 else
-                    writeSingleTextFile(bw, label, txtData);
+                    writeSingleTextFile(bw, label, txtData, file);
 
                 cnt++;
             }

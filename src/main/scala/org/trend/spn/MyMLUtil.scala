@@ -2,6 +2,7 @@ package org.trend.spn
 
 import java.util.concurrent.TimeUnit.{NANOSECONDS => NANO}
 
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
@@ -11,7 +12,19 @@ import scala.io.Source
 /**
   * Created by greghuang on 4/22/16.
   */
+case class FeatureImage(name: String, label: Double, features: Vector)
+
 object MyMLUtil {
+  def loadLabelFeatures(sqlCtx: SQLContext, path: String): DataFrame = {
+    import sqlCtx.implicits._
+    val df = sqlCtx.read.text(path)
+    df.map(row => {
+      val splitted = row.getString(0).split(" ")
+      val feature = splitted.drop(2).map(_.toDouble/255.0)
+      FeatureImage(splitted(0), splitted(1).toDouble, Vectors.dense(feature))
+    }).toDF()
+  }
+
   def loadLabelData(sqlCtx: SQLContext, path: String): DataFrame = {
     val source = Source.fromFile(path)
     val vectorArray = source.getLines()
@@ -62,5 +75,22 @@ object MyMLUtil {
   def showDataFrame(df : DataFrame): Unit = {
     println("Schema::" + df.schema)
     df.collect().foreach(println)
+  }
+
+  // For testing
+  def main(args: Array[String]) {
+    val sparkConf = new SparkConf(false)
+      .setMaster("local[*]")
+      .setAppName("MySpark")
+      .set("spark.driver.port", "7777")
+      .set("spark.driver.host", "localhost")
+
+    val sc = new SparkContext(sparkConf)
+    val sqlCtx = new SQLContext(sc)
+
+    val df = MyMLUtil.loadLabelFeatures(sqlCtx, "data/output/train2.txt")
+    println(df.first())
+
+    sc.stop
   }
 }
