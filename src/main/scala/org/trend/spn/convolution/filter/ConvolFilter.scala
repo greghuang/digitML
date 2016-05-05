@@ -33,7 +33,7 @@ object ConvolFilter {
     //    val sum2 = MatrixUtil.convolOp(m1, m2)
     //    println("Sum2:" + sum2)
 
-    val filter = new ConvolFilter(Kernel.sharp3x3)
+    val filter = new ConvolFilter(Kernel("sharp3x3"))
     //val output = filter.setDimension(5, 5).filter(input)
     val output = filter.filter3x3(rawMat)
     println("Result")
@@ -41,19 +41,20 @@ object ConvolFilter {
   }
 }
 
-class ConvolFilter(val kernel: Matrix) {
-  
+class ConvolFilter(val kernel: Kernel) {
+
   def filter3x3(data: Array[Double], rows: Int, cols: Int): Matrix = {
     filter3x3(Matrices.dense(rows, cols, data))
   }
 
   def filter3x3(data: Matrix): Matrix = {
     val bdm = BDM.zeros[Double](data.numRows - 2, data.numCols - 2)
+    val covMat = kernel.matrix
 
     for (j <- 1 to (data.numRows - 2))
       for (i <- 1 to (data.numCols - 2)) {
         val sliceMat = MatrixUtil.slice3x3Block(data, j, i)
-        bdm(j - 1, i - 1) = MatrixUtil.convolOp(sliceMat, kernel)
+        bdm(j - 1, i - 1) = MatrixUtil.convolOp(sliceMat, covMat)
       }
     MatrixUtil.fromBreeze(bdm)
   }
