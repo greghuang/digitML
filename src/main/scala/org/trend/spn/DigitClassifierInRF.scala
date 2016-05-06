@@ -16,7 +16,7 @@ import org.apache.spark.{SparkConf, SparkContext}
  * [5/5 12:49] Test Error = 0.14473684210526316, Recall:0.8552631578947368, expF + proF(14+14) + 100 trees
  * [5/5 12:51] Test Error = 0.13056680161943324, Recall:0.8694331983805668, expF + proF(14+14) + 300 trees
  */
-object DigitIdentifier {
+object DigitClassifierInRF {
   def main(args: Array[String]) {
     val sparkConf = new SparkConf(false)
       .setMaster("local[*]")
