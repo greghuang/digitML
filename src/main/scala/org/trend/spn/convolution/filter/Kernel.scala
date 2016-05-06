@@ -1,7 +1,7 @@
 package org.trend.spn.convolution.filter
 
-import org.apache.spark.mllib.linalg.{Matrix, Matrices, Vector, Vectors}
-import breeze.linalg.{DenseMatrix => BDM, DenseVector}
+import org.apache.spark.mllib.linalg.{Matrix, Matrices}
+import breeze.linalg.{DenseMatrix => BDM}
 
 /**
   * Created by GregHuang on 5/5/16.
