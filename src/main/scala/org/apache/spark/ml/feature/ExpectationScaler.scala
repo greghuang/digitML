@@ -32,11 +32,26 @@ class ExpectationScaler(override val uid: String)
   extends Estimator[ExpectationScalerModel] with DefaultParamsWritable with ExpectationScalerParam {
   def this() = this(Identifiable.randomUID("expectationScaler"))
 
+  var threshold: Double = 0.0
+
   /** @group setParam */
   def setInputCol(value: String): this.type = set(inputCol, value)
 
   /** @group setParam */
   def setOutputCol(value: String): this.type = set(outputCol, value)
+
+  /** @group setParam */
+  def setThreshold(value: Double): this.type = {
+    threshold = value
+    this
+  }
+
+//  val isValid: PartialFunction[Double, Double] = {
+//    case x if x > threshold  => x
+//    case _ => 0.0
+//  }
+
+  def isValid(x: Double) = if (x > threshold) x else 0.0
 
   case class ImageData(label : Double, features: Vector)
 
@@ -68,18 +83,19 @@ class ExpectationScaler(override val uid: String)
 
     val buf = scala.collection.mutable.ArrayBuffer.empty[Vector]
     val dinctLabel = dataset.select("label").distinct().map{_.getDouble(0)}.collect()
-//    println("====Label====")
-//    dinctLabel.foreach(println)
     for (i <- dinctLabel) {
-      val input = dataset.filter(dataset.col("label").equalTo(i)).select($(inputCol))
+      val input = dataset.filter(dataset("label").equalTo(i)).select($(inputCol))
       val summary = Statistics.colStats(input.map { case Row(v: Vector) => v })
       val v = normalizeVector(summary.numNonzeros, summary.count)
       buf += v
     }
 
     val array = buf.toArray
-        .map(_.toArray)
-        .transpose
+      .map(v => v.toArray)
+      .transpose
+      .map(r =>
+        r.map(isValid(_)) // Filter by threshold
+      )
 
     val mat = Matrices.dense(array(0).length, array.length, array.flatten)
 

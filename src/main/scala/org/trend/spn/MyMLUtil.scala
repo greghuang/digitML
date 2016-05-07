@@ -15,12 +15,20 @@ import scala.io.Source
 case class FeatureImage(name: String, label: Double, features: Vector)
 
 object MyMLUtil {
-  def loadLabelFeatures(sqlCtx: SQLContext, path: String): DataFrame = {
+//  def loadCVS(sqlCtx: SQLContext, path: String): DataFrame = {
+//    import sqlCtx.implicits._
+//    val df = sqlCtx.read
+//      .format("com.databricks.spark.csv")
+//      .options(Map("header" -> "false", "inferSchema" -> "true"))
+//      .load(path)
+//    df.toDF()
+//  }
+  def loadLabelFeatures(sqlCtx: SQLContext, path: String, sep: String = " "): DataFrame = {
     import sqlCtx.implicits._
     val df = sqlCtx.read.text(path)
     df.map(row => {
-      val splitted = row.getString(0).split(" ")
-      val feature = splitted.drop(2).map(_.toDouble/255.0)
+      val splitted = row.getString(0).split(sep)
+      val feature = splitted.drop(2).map(_.toDouble)
       FeatureImage(splitted(0), splitted(1).toDouble, Vectors.dense(feature))
     }).toDF()
   }
@@ -48,20 +56,20 @@ object MyMLUtil {
   }
 
   def convertMultiClassesToSingleClass(sqlCtx: SQLContext, path: String, targetLabel: Double): DataFrame = {
-    val raw = sqlCtx.read.format("libsvm").load(path)
+    val df = sqlCtx.read.format("libsvm").load(path)
 //    val rdd = raw.map(row => row.getDouble(0) match {
 //      case `targetLabel` => Row(1.0, row(1))
 //      case _ => Row(0.0, row(1))
 //    })
 
-    val rdd = raw.map {
+    val rdd = df.map {
       case Row(label: Double, features: Vector) => label match {
         case `targetLabel` => Row(1.0, features)
         case _ => Row(0.0, features)
       }
     }
 
-    val data = sqlCtx.createDataFrame(rdd, raw.schema)
+    val data = sqlCtx.createDataFrame(rdd, df.schema)
     data.toDF("label", "features")
   }
 

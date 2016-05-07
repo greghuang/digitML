@@ -9,7 +9,7 @@ import org.trend.spn.MyMLUtil
 /**
   * Created by greghuang on 4/27/16.
   */
-object ExpectationML extends App {
+object ExpectationFeature extends App {
   val sparkConf = new SparkConf(false)
     .setMaster("local[*]")
     .setAppName("MySpark")
@@ -22,14 +22,18 @@ object ExpectationML extends App {
 //  val data = MyMLUtil.loadLabelData(sqlCtx, "data/train/training_data.txt").toDF("label", "features")
   val data = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/training_data.txt")
 
-  val expect = new ExpectationScaler().setInputCol("features").setOutputCol("scaledFeatures")
+  val expect = new ExpectationScaler()
+    .setInputCol("features")
+    .setOutputCol("scaledFeatures")
+    .setThreshold(0.5)
+
   val normalizer = new Normalizer()
     .setInputCol("scaledFeatures")
     .setOutputCol("expFeatures")
 
   val model = new Pipeline().setStages(Array(expect, normalizer)).fit(data)
-  val transformData = model.transform(data).select("label", "expFeatures")
+  val transformData = model.transform(data).select("name", "label", "expFeatures")
   //MyMLUtil.showDataFrame(transformData)
-  transformData.write.parquet("data/train/expectData.parquet")
+  transformData.write.parquet("data/train/features/expectDataT5.parquet")
   sc.stop()
 }
