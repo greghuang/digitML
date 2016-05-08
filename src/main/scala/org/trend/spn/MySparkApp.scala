@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by greghuang on 5/7/16.
   */
-trait MySpark {
+trait MySparkApp extends App {
   final val sc = new SparkContext(new SparkConf(false)
     .setMaster("local[*]")
     .setAppName("MySpark")

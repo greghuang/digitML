@@ -1,14 +1,12 @@
 package org.trend.spn.feature
 
 import org.apache.spark.ml.feature.{PCA, ProjectTransformer}
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext}
-import org.trend.spn.{MyMLUtil, MySpark}
+import org.trend.spn.{MyMLUtil, MySparkApp}
 
 /**
   * Created by greghuang on 5/7/16.
   */
-object ProjectFeature extends App with MySpark {
+object ProjectFeature extends MySparkApp {
 
   //  val df = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/features/projectFeatures.txt").toDF("name", "label", "projFeature")
 

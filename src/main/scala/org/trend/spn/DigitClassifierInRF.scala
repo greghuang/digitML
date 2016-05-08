@@ -28,6 +28,7 @@ import scopt.OptionParser
   * [5/7 23:02] Test Error = 0.06645898234683278, Recall:0.9335410176531672, Training Time 201 sec,  expF + proF(28+28) + 6 convol(pca 300) + 150 trees, max_depth=30, min_node=10
   * [5/7 23:02] Test Error = 0.061266874350986544, Recall:0.9387331256490135, Training Time 181 sec,  expF + proF(28+28) + 6 convol + 150 trees, max_depth=30, min_node=10
   * ==== 60000 training data ====
+  * [5/8 03:00] Test Error = 0.007518941579169991, Recall:0.99248105842083, Training Time 1038 sec
   * Best Result:
   *
   */
@@ -42,7 +43,7 @@ object DigitClassifierInRF extends MyTraining60000 {
                     numTrees: Int = 100
                    ) extends AbstractParams[Params]
 
-  def main(args: Array[String]) {
+//  def main(args: Array[String]) {
     val defaultParams = Params()
 
     val parser = new OptionParser[Params]("DigitClassifierInRF") {
@@ -77,19 +78,9 @@ object DigitClassifierInRF extends MyTraining60000 {
     } getOrElse {
       System.exit(1)
     }
-  }
+//  }
 
   def run(params: Params) {
-//    val sparkConf = new SparkConf(false)
-//      .setMaster("local[*]")
-//      .setAppName("MySpark")
-//      .set("spark.driver.port", "7777")
-//      .set("spark.driver.host", "localhost")
-//
-//    val sc = new SparkContext(sparkConf)
-//    val sqlCtx = new SQLContext(sc)
-
-    import sqlCtx.implicits._
 
 //    val data1 = sqlCtx.read.parquet("data/train/features/expectData.parquet").cache()
 //    val data2 = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/features/projectFeature_14_14.txt").toDF("name2", "lable2", "proFeatures").cache()
@@ -107,6 +98,7 @@ object DigitClassifierInRF extends MyTraining60000 {
 //      .repartition(5)
 //      .cache()
 
+    import sqlCtx.implicits._
     val data = training60000.cache()
     data.printSchema()
     println(data.first())

@@ -3,7 +3,7 @@ package org.trend.spn
 /**
   * Created by greghuang on 5/8/16.
   */
-trait MyTraining60000 extends MySpark {
+trait MyTraining60000 extends MySparkApp {
 
   val expectionFeatData = sqlCtx.read.parquet("data/train/features/expFeat_60000_20x20.parquet").toDF("name", "label", "expectFeat")
   val projectFeatData = sqlCtx.read.parquet("data/train/features/projectFeat_60000_20x20.parquet").toDF("name2", "label2", "projFeat")
@@ -15,5 +15,5 @@ trait MyTraining60000 extends MySpark {
 //    .join(data3, $"name" === $"name3")
 //    .withColumn("features", TupleUDF.merge8Col($"expFeatures", $"proFeatures", $"convol_emboss", $"convol_sobelH", $"convol_sobelV", $"convol_gradientV", $"convol_gradientH", $"convol_edge"))
     .select("name", "label", "features")
-    .repartition(5)
+    .repartition(3)
 }
