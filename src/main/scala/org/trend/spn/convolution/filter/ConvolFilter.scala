@@ -44,7 +44,7 @@ object ConvolFilter {
   }
 }
 
-class ConvolFilter(val kernel: Kernel) {
+class ConvolFilter(val kernel: Kernel) extends java.io.Serializable {
 
   def filter3x3(data: Array[Double], rows: Int, cols: Int): Matrix = {
     filter3x3(Matrices.dense(rows, cols, data))

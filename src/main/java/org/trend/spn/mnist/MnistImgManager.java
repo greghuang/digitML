@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 
 /**
  * Created by greghuang on 4/24/16.
+ * "data/mnist/train-images.idx3-ubyte" "data/mnist/train-labels.idx1-ubyte" "data/mnist/testing_30000.txt"
  */
 public class MnistImgManager {
     private MnistImageFile images;
@@ -61,8 +62,12 @@ public class MnistImgManager {
 
     public void writeImgInLibsvm(BufferedWriter bw, int label, int[] image) {
         RawImgConvertor.writeFileInLibsvm(bw, label, image);
-
     }
+
+    public void writeImgInFile(BufferedWriter bw, int label, int[] image, String filename) {
+        RawImgConvertor.writeSingleTextFile(bw, label, image, filename);
+    }
+
 
 //    public void showImage(int[] image) throws IOException {
 //        BufferedWriter ppmOut = null;
@@ -89,16 +94,18 @@ public class MnistImgManager {
 
         try {
             MnistImgManager manager = new MnistImgManager(args[0], args[1]);
+            String formatStr = "mnist%05d";
 
             Path out = Paths.get(args[2]);
             if (out.toFile().exists()) out.toFile().delete();
 
             bw = Files.newBufferedWriter(out);
 
-            for (int i = 1; i <= 20000; i++) {
+            for (int i = 1; i <= 60000; i++) {
                 int[] image = manager.readImage(i);
                 int label = manager.readLabel(i);
-                manager.writeImgInLibsvm(bw, label, image);
+                manager.writeImgInFile(bw, label, image, String.format(formatStr, i));
+//                manager.writeImgInLibsvm(bw, label, image);
 //                manager.writeImgToBitmap(Paths.get(args[2] + "/" + i + ".bmp").toFile(), manager.readImage(i));
             }
             bw.close();

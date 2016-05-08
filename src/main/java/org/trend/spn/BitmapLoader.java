@@ -33,8 +33,8 @@ public class BitmapLoader {
         if (!out.exists()) out.mkdir();
 
         BitmapLoader bmploader = new BitmapLoader(28, 28);
-//        bmploader.convertRawToBitmap(inputFolder, outputFolder);
-        bmploader.convertBitmapToRaw(inputFolder, outputFolder);
+        bmploader.convertRawToBitmap(inputFolder, outputFolder);
+//        bmploader.convertBitmapToRaw(inputFolder, outputFolder);
     }
 
     public void convertBitmapToRaw(String inputFolder, String outputFolder) throws IOException {
@@ -42,7 +42,6 @@ public class BitmapLoader {
         int[] data = new int[width * height];
 
         for (String f : new File(inputFolder).list()) {
-
             if (!f.endsWith("bmp")) continue;
             System.out.print(String.format("[%d] Converting %s to ", count++, f));
 
@@ -51,7 +50,6 @@ public class BitmapLoader {
             Path out = Paths.get(outputFolder + "/" + f.substring(0, f.length() - 4));
             Files.write(out, ImgUtility.intToByte(data));
             System.out.println(out + " done");
-
         }
     }
 

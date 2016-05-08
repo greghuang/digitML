@@ -39,7 +39,7 @@ object MyFirstModel extends App {
   val sc = new SparkContext(sparkConf)
   val sqlCtx = new SQLContext(sc)
 
-  val data = sqlCtx.createDataFrame(vectorBuf.toSeq).toDF("label", "features").cache()
+  val data = sqlCtx.createDataFrame(vectorBuf).toDF("label", "features").cache()
 
   data.select("label", "features").collect().foreach {
     case Row(label: Double, features: Vector) =>

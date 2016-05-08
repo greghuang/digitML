@@ -13,12 +13,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
 /**
  * Created by greghuang on 4/30/16.
- * "data/train/Normalization_14x14" "data/train/featureSet/projectFeature_14_14.txt" "data/train.csv"
+ * "data/train/Normalization_14x14" "data/train/features/projectFeature_14_14.txt" "data/train.csv"
+ * "data/train/resample_20_20" "data/train/features/projectFeat_20x20.txt" "data/train.csv"
  */
 
-public class ProjectFeature {
+public class ProjectFeatureExtractor {
     public static void main(String[] args) throws IOException {
         // For test
 //        int[] test = new int[]{1,1,1,0,0,0,0,0,1};
@@ -35,18 +39,26 @@ public class ProjectFeature {
             System.exit(1);
         }
 
-        final int W = 14;
-        final int H = 14;
+        final int W = 20;
+        final int H = 20;
         final String inputFolder = args[0];
         final String outputFile = args[1];
+        final String label = args[2];
+
+        extractFromRaw(W, H, inputFolder, outputFile, label);
+
+        System.out.println("Done");
+    }
+
+    public static void extractFromRaw(int W, int H, String inputFolder, String outputFile, String label) throws IOException {
+        RawImgConvertor ric = new RawImgConvertor(label);
+        BitmapLoader bmpProcessor = new BitmapLoader(W, H);
+        int[] data = new int[W*H];
 
         Path out = Paths.get(outputFile);
         if (out.toFile().exists()) out.toFile().delete();
 
-        BufferedWriter bw = Files.newBufferedWriter(out);
-        RawImgConvertor ric = new RawImgConvertor(args[2]);
-        BitmapLoader bmpProcessor = new BitmapLoader(W, H);
-        int[] data = new int[W*H];
+        BufferedWriter bw = Files.newBufferedWriter(out, CREATE, APPEND);
 
         for (String f : new File(inputFolder).list()) {
             if (!f.endsWith("bmp")) continue;
@@ -61,8 +73,6 @@ public class ProjectFeature {
         }
 
         bw.close();
-
-        System.out.println("Done");
     }
 
     public static float[] normalize(int[] data) {

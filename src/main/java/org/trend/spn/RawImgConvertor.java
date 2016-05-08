@@ -18,11 +18,13 @@ public class RawImgConvertor {
     private Map<String, Integer> labelData;
 
     public RawImgConvertor(String labelFile) {
-        labelData = new HashMap<String, Integer>();
-        loadLabelData(labelFile, labelData);
+        if (labelFile != null) {
+            labelData = new HashMap<String, Integer>();
+            loadLabelData(labelFile, labelData);
+        }
     }
 
-    public void mergeImages(String inputFolder, String outputFile, boolean isLibsvm) throws IOException {
+    public void mergeImages(String inputFolder, String outputFile, boolean isLibsvm, String prefix) throws IOException {
         Path in = Paths.get(inputFolder);
         String[] files = in.toFile().list();
         Path out = Paths.get(outputFile);
@@ -40,11 +42,11 @@ public class RawImgConvertor {
             int label = getLabel(file);
             byte[] raw = Files.readAllBytes(p);
             int[] txtData = ImgUtility.byteToInt(raw);
-            if (txtData != null && label != -1) {
+            if (txtData != null) {
                 if (isLibsvm)
                     writeFileInLibsvm(bw, label, txtData);
                 else
-                    writeSingleTextFile(bw, label, txtData, file);
+                    writeSingleTextFile(bw, label, txtData, prefix+file);
 
                 cnt++;
             }
@@ -62,7 +64,7 @@ public class RawImgConvertor {
         }
 
         RawImgConvertor ric = new RawImgConvertor(args[2]);
-        ric.mergeImages(args[0], args[1], false);
+        ric.mergeImages(args[0], args[1], false, "");
     }
 
     public int getLabel(String filename) {
@@ -70,7 +72,7 @@ public class RawImgConvertor {
         if (labelData != null) {
             label = labelData.getOrDefault(filename, -1);
             if (label == -1) System.err.println("No label for " + filename);
-        } else throw new RuntimeException("No label data");
+        }
         return label;
     }
 

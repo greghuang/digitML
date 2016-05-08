@@ -50,7 +50,7 @@ object MyMLUtil {
       vectorBuf += t
     })
 
-    val data = sqlCtx.createDataFrame(vectorBuf.toSeq)
+    val data = sqlCtx.createDataFrame(vectorBuf)
     source.close()
     data
   }
