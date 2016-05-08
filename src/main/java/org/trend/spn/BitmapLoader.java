@@ -46,10 +46,11 @@ public class BitmapLoader {
             System.out.print(String.format("[%d] Converting %s to ", count++, f));
 
             Path in = Paths.get(inputFolder + "/" + f);
-            readBitmap(in.toFile(), data);
-            Path out = Paths.get(outputFolder + "/" + f.substring(0, f.length() - 4));
-            Files.write(out, ImgUtility.intToByte(data));
-            System.out.println(out + " done");
+            if(readBitmap(in.toFile(), data)) {
+                Path out = Paths.get(outputFolder + "/" + f.substring(0, f.length() - 4));
+                Files.write(out, ImgUtility.intToByte(data));
+                System.out.println(out + " done");
+            }
         }
     }
 
@@ -82,14 +83,18 @@ public class BitmapLoader {
         return Files.readAllBytes(aFileName);
     }
 
-    public void readBitmap(File f, int[] buf) throws IOException {
+    public boolean readBitmap(File f, int[] buf) throws IOException {
         BufferedImage img = ImageIO.read(f);
         final int height = img.getHeight();
         final int width = img.getWidth();
         final int size = width * height;
 
-        if (buf == null || buf.length != size)
-            buf = new int[size];
+        if (buf == null || buf.length != size) {
+            Path source = Paths.get("data/test/bitmap/" + f.getName());
+            Path newDir = Paths.get("data/test/not20x20");
+            Files.copy(source, newDir.resolve(source.getFileName()));
+            return false;
+        }
 
         img.getData().getPixels(0, 0, width, height, buf);
 //        for (int i = 0; i < height; i++) {
@@ -98,5 +103,6 @@ public class BitmapLoader {
 //            }
 //            System.out.println();
 //        }
+        return true;
     }
 }

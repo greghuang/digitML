@@ -1,6 +1,8 @@
 package org.apache.spark.ml.feature
 
-import breeze.linalg.{DenseMatrix, DenseVector, max}
+import breeze.linalg.{DenseMatrix, DenseVector, max, normalize}
+import breeze.linalg.norm
+import breeze.numerics.abs
 import org.apache.spark.annotation.Since
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{ParamMap, Params}
@@ -69,19 +71,28 @@ class ProjectTransformer(override val uid: String) extends Transformer
       val matX = DenseMatrix.ones[Double](1, dimension)
       val matY = DenseMatrix.ones[Double](dimension, 1)
 
-      val projX = matX * bdm
-      val projY = bdm * matY
-
-      var resX = projX.toDenseVector
-      var resY = projY.toDenseVector
+      val projX = (matX * bdm).toDenseVector
+      val projY = (bdm * matY).toDenseVector
 
       // Normalization
-      val maxX = max(projX.toDenseVector)
-      val maxY = max(projY.toDenseVector)
-      resX = resX :/ maxX
-      resY = resY :/ maxY
+      val resX1 = projX :/ max(projX)
+      val resY1 = projY :/ max(projY)
 
-      Vectors.dense(DenseVector.vertcat(resX, resY).toArray)
+      // symmetry matrix
+      matX(0, 0 to (dimension / 2) - 1) := -1.0
+      matY(0 to (dimension / 2) - 1, 0) := -1.0
+
+      val symX = (matX * bdm).toDenseVector
+      val symY = (bdm * matY).toDenseVector
+
+      val resX2 = normalize(abs(symX))
+      val resY2 = normalize(abs(symY))
+
+      val resX3 = norm(symX)
+      val resY3 = norm(symY)
+      val res3 = DenseVector(resX3, resY3)
+
+      Vectors.dense(DenseVector.vertcat(res3, resX1, resY1, resX2, resY2).toArray)
     }
 
     dataset.withColumn($(outputCol), projectFt(dataset($(inputCol))))

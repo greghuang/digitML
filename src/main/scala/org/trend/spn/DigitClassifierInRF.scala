@@ -28,8 +28,6 @@ import scopt.OptionParser
   * [5/7 23:02] Test Error = 0.06645898234683278, Recall:0.9335410176531672, Training Time 201 sec,  expF + proF(28+28) + 6 convol(pca 300) + 150 trees, max_depth=30, min_node=10
   * [5/7 23:02] Test Error = 0.061266874350986544, Recall:0.9387331256490135, Training Time 181 sec,  expF + proF(28+28) + 6 convol + 150 trees, max_depth=30, min_node=10
   * ==== 60000 training data ====
-  * [5/8 22:47] Test Error = 0.13071129707112972, Recall:0.8692887029288703, Training Time 397 sec, expF. + projF. + 150 trees, max_depth=30, min_node=10
-  * [5/8 23:10] Test Error = 0.12912133891213384, Recall:0.8708786610878662, Training Time 328 sec, expF. + projF. + 100 trees, max_depth=30, min_node=5
   * Best Result:
   *
   */

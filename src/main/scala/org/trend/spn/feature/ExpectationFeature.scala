@@ -33,7 +33,7 @@ object ExpectationFeature extends App {
 
   val model = new Pipeline().setStages(Array(expect, normalizer)).fit(data)
   val transformData = model.transform(data).select("name", "label", "expFeatures")
-  //MyMLUtil.showDataFrame(transformData)
-  transformData.write.parquet("data/train/features/expFeat_60000.parquet")
+  println("Count:" + transformData.select("expFeatures").distinct().count())
+  transformData.write.parquet("data/train/features/expFeat_60000_20x20.parquet")
   sc.stop()
 }

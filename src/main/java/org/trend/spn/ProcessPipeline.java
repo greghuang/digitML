@@ -7,13 +7,13 @@ import java.nio.file.Paths;
 
 /**
  * Created by greghuang on 4/27/16.
- * "data/train/spherizer_edge_20x20" "data/train/train_spherizer_edge_20x20.txt" "data/train.csv" "20" "20"
- * "data/train/ripple_edge_20x20" "data/train/train_ripple_edge_20x20.txt" "data/train.csv" "20" "20"
- * "data/train/twirl_sharp_20x20" "data/train/train_twirl_sharp_20x20.txt" "data/train.csv" "20" "20"
- * "data/train/resample_20_20" "data/train/train_resample_20_20.txt" "data/train.csv" "20" "20"
- * "data/train/pinch_edge_20x20" "data/train/train_pinch_edge_20x20.txt" "data/train.csv" "20" "20"
- * "20" "20" "data/train/zigzag_20_20" "data/train/train_zigzag_20_20.txt" "data/train.csv"
- * "20" "20" "data/test/testing_20x20" "data/train/testing_20x20.txt"
+ * "20" "20" "data/train/spherizer_edge_20x20" "data/train/train_spherizer_edge_20x20.txt" "data/train.csv"
+ * "20" "20" "data/train/ripple_edge_20x20" "data/train/train_ripple_edge_20x20.txt" "data/train.csv"
+ * "20" "20" "data/train/twirl_sharp_20x20" "data/train/train_twirl_sharp_20x20.txt" "data/train.csv"
+ * "20" "20" "data/train/resample_20_20" "data/train/train_resample_20x20.txt" "data/train.csv"
+ * "20" "20" "data/train/pinch_edge_20x20" "data/train/train_pinch_edge_20x20.txt" "data/train.csv"
+ * "20" "20" "data/train/zigzag_20_20" "data/train/train_zigzag_20x20.txt" "data/train.csv"
+ * "20" "20" "data/test/testing_20x20" "data/test/testing_20x20.txt"
  */
 public class ProcessPipeline {
     public static void main(String[] args) {

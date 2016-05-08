@@ -94,7 +94,7 @@ class ExpectationScaler(override val uid: String)
       .map(v => v.toArray)
       .transpose
       .map(r =>
-        r.map(isValid(_)) // Filter by threshold
+        r.map(isValid) // Filter by threshold
       )
 
     val mat = Matrices.dense(array(0).length, array.length, array.flatten)
