@@ -29,6 +29,7 @@ import scopt.OptionParser
   * [5/7 23:02] Test Error = 0.061266874350986544, Recall:0.9387331256490135, Training Time 181 sec,  expF + proF(28+28) + 6 convol + 150 trees, max_depth=30, min_node=10
   * ==== 60000 training data ====
   * [5/8 03:00] Test Error = 0.007518941579169991, Recall:0.99248105842083, Training Time 1038 sec
+  * [5/10 23:48] Test Error = 0.00790483351649407, Recall:0.9920951664835059, Training Time 870 sec, expF20x20 + proF20x20-2 + 100 trees, max_depth=30, min_node=5
   * Best Result:
   *
   * -Xms10240m -Xmx10240m
@@ -67,8 +68,9 @@ object DigitClassifierInRF extends DigitDataSet {
         """
           |Example command line to run this app:
           |
-          | bin/spark-submit --class org.apache.spark.examples.ml.MovieLensALS \
-          |  examples/target/scala-*/spark-examples-*.jar \
+          | bin/spark-submit --class org.trend.spn.DigitClassifierInRF \
+          |  target/scala-*/digitml_2.11-*.jar \
+          |  --maxDepth 15
           |  --rank 10 --maxIter 15 --regParam 0.1 \
           |  --movies data/mllib/als/sample_movielens_movies.txt \
           |  --ratings data/mllib/als/sample_movielens_ratings.txt
@@ -154,10 +156,11 @@ object DigitClassifierInRF extends DigitDataSet {
 //            println(s"($label) -> $scaleF   $normF")
 //        }
 
-//      evaluate(trainingDuration, predictionDuration, predictions)
+      if (!params.isRealTesting)
+        evaluate(trainingDuration, predictionDuration, predictions)
 
       val result = predictions.select("name", "predictedLabel", "prediction", "probability")
-      result.show()
+//      result.show()
       if (params.savePredictions) saveResult(sqlCtx, result)
     }
     else {

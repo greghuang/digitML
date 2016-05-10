@@ -19,8 +19,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % sparkDependencyScope,
   "org.apache.spark" %% "spark-sql" % sparkVersion % sparkDependencyScope,
   "org.apache.spark" %% "spark-mllib" % sparkVersion % sparkDependencyScope,
-  "org.apache.spark" %% "spark-streaming" % sparkVersion % sparkDependencyScope,
-  "com.github.scopt" %% "scopt" % "3.4.0" % sparkDependencyScope,
+  "com.github.scopt" %% "scopt" % "3.4.0",
   "com.databricks" %% "spark-csv" % "1.4.0" % sparkDependencyScope,
   "com.github.fommil.netlib" % "all" % "1.1.2" pomOnly()
 )

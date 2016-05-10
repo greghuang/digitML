@@ -10,9 +10,6 @@ trait DigitDataSet extends MySparkApp {
   val projectFeatTrainingData = sqlCtx.read.parquet("data/train/features/projectFeat_60000_20x20_2.parquet").toDF("name2", "label2", "projFeat")
 //  val convolFeatTraningData = sqlCtx.read.parquet("data/train/features/convol3filter.parquet").toDF("name3", "label3", "convol_emboss", "convol_edgeH", "convol_edgeV")
 
-  // Testing
-  val expectionFeatTestingData = sqlCtx.read.parquet("data/test/features/expFeat_20x20_all.parquet").toDF("name", "label", "expectFeat")
-  val projectFeatTestingData = sqlCtx.read.parquet("data/test/features/projectFeat_20x20_all.parquet").toDF("name2", "label2", "projFeat")
 
   import sqlCtx.implicits._
   val TrainData = expectionFeatTrainingData
@@ -22,6 +19,10 @@ trait DigitDataSet extends MySparkApp {
 //    .withColumn("features", TupleUDF.merge5Col($"expectFeat", $"projFeat", $"convol_emboss", $"convol_edgeV", $"convol_edgeH"))
     .select("name", "label", "features")
     .repartition(2)
+
+  // Testing
+  //  val expectionFeatTestingData = sqlCtx.read.parquet("data/test/features/expFeat_20x20_all.parquet").toDF("name", "label", "expectFeat")
+  //  val projectFeatTestingData = sqlCtx.read.parquet("data/test/features/projectFeat_20x20_all.parquet").toDF("name2", "label2", "projFeat")
 
 //  val TestingData = expectionFeatTestingData
 //    .join(projectFeatTestingData, $"name" === $"name2")
