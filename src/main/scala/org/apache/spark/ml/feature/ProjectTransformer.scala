@@ -88,11 +88,11 @@ class ProjectTransformer(override val uid: String) extends Transformer
       val resX2 = normalize(abs(symX))
       val resY2 = normalize(abs(symY))
 
-      val resX3 = norm(symX)
-      val resY3 = norm(symY)
-      val res3 = DenseVector(resX3, resY3)
+//      val resX3 = norm(symX)
+//      val resY3 = norm(symY)
+//      val res3 = DenseVector(resX3, resY3)
 
-      Vectors.dense(DenseVector.vertcat(res3, resX1, resY1, resX2, resY2).toArray)
+      Vectors.dense(DenseVector.vertcat(resX1, resY1, resX2, resY2).toArray)
     }
 
     dataset.withColumn($(outputCol), projectFt(dataset($(inputCol))))

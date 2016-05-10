@@ -48,6 +48,12 @@ object TupleUDF {
       Vectors.dense(agg)
     }
 
+  def merge5Col =
+    udf {(c1: Vector, c2: Vector, c3: Vector, c4: Vector, c5: Vector) =>
+      val agg = c1.toArray ++: c2.toArray ++: c3.toArray ++: c4.toArray ++: c5.toArray
+      Vectors.dense(agg)
+    }
+
   def merge8Col =
     udf {(c1: Vector, c2: Vector, c3: Vector, c4: Vector, c5: Vector, c6: Vector, c7: Vector, c8: Vector) =>
       val agg = c1.toArray ++: c2.toArray ++: c3.toArray ++: c4.toArray ++: c5.toArray ++: c6.toArray ++: c7.toArray ++: c8.toArray

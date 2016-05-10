@@ -41,14 +41,16 @@ public class PrepareSubmitForm {
         for (String row : lines) {
             sb.setLength(0);
             String[] cols = row.split(",");
-            //name,predictedLabel,label,prediction,probability
+            if (cols.length != 13)
+                throw new RuntimeException("row format is not expected, should be [name, predictedLabel, prediction, probability]");
+
             sb.append(cols[0]);
 
             // parse probility
-            cols[4] = cols[4].substring(2, cols[4].length());
-            cols[13] = cols[13].substring(0, cols[13].length()-2);
+            cols[3] = cols[3].substring(2, cols[3].length());
+            cols[12] = cols[12].substring(0, cols[12].length()-2);
             List<String> probs = Arrays.asList(cols);
-            probs = probs.subList(4, 14);
+            probs = probs.subList(3, 13);
             for (int i = 0; i < probs.size(); i++) {
                 sb.append(",").append(probs.get(mappingTable.get(i)));
             }

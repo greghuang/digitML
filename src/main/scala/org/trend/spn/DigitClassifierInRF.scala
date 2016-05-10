@@ -31,13 +31,15 @@ import scopt.OptionParser
   * [5/8 03:00] Test Error = 0.007518941579169991, Recall:0.99248105842083, Training Time 1038 sec
   * Best Result:
   *
+  * -Xms10240m -Xmx10240m
   */
-object DigitClassifierInRF extends MyTraining60000 {
+object DigitClassifierInRF extends DigitDataSet {
 
   case class Params(crossValidation: Boolean = false,
                     singleModel: Boolean = true,
                     saveModel: Boolean = false,
                     savePredictions: Boolean = false,
+                    isRealTesting: Boolean = false,
                     maxDepth: Int = 30,
                     minLeafNodes: Int = 5,
                     numTrees: Int = 100
@@ -99,14 +101,14 @@ object DigitClassifierInRF extends MyTraining60000 {
 //      .cache()
 
     import sqlCtx.implicits._
-    val data = training60000.cache()
-    data.printSchema()
-    println(data.first())
+
+    TrainData.printSchema()
+    //println(training.first())
 
     val labelIndexer = new StringIndexer()
       .setInputCol("label")
       .setOutputCol("indexedLabel")
-      .fit(data)
+      .fit(TrainData)
 
 //    val featureIndexer = new VectorIndexer()
 //      .setInputCol("features")
@@ -114,7 +116,11 @@ object DigitClassifierInRF extends MyTraining60000 {
 //      .setMaxCategories(2)
 //      .fit(data)
 
-    val Array(trainingData, testingData) = data.randomSplit(Array(0.8, 0.2), seed = 1234L)
+    val Array(splitTrain, splitTest) = TrainData.randomSplit(Array(0.8, 0.2), seed = 1234L)
+
+    val training = if (params.isRealTesting) TrainData.cache() else splitTrain
+    val testing = splitTest
+//    val testing = if (params.isRealTesting) TestingData.cache() else splitTest
 
     //    val rf = new RandomForestClassifier()
     //      .setLabelCol("indexedLabel")
@@ -127,7 +133,7 @@ object DigitClassifierInRF extends MyTraining60000 {
       .setNumTrees(params.numTrees)
       .setMaxDepth(params.maxDepth)
       .setMinInstancesPerNode(params.minLeafNodes)
-      .setMaxMemoryInMB(1024)
+      .setMaxMemoryInMB(2024)
 //      .setMinInfoGain(0.05)
 
 
@@ -139,19 +145,24 @@ object DigitClassifierInRF extends MyTraining60000 {
     val pipeline = new Pipeline().setStages(Array(labelIndexer, rf, labelConvertor))
 
     if (params.singleModel) {
-      val (trainingDuration, predModel) = MyMLUtil.time(pipeline.fit(trainingData))
-      val (predictionDuration, predictions) = MyMLUtil.time(predModel.transform(testingData))
+      val (trainingDuration, predModel) = MyMLUtil.time(pipeline.fit(training))
+      val (predictionDuration, predictions) = MyMLUtil.time(predModel.transform(testing))
 
+//      if (params.saveModel) predModel.save("data/model/rf-model-20160509-01")
 //        pipelineModel.transform(data).collect().foreach {
 //          case Row(label: Double, features: Vector, scaleF: Vector, normF: Vector) =>
 //            println(s"($label) -> $scaleF   $normF")
 //        }
 
-      evaluate(trainingDuration, predictionDuration, predictions)
+//      evaluate(trainingDuration, predictionDuration, predictions)
+
+      val result = predictions.select("name", "predictedLabel", "prediction", "probability")
+      result.show()
+      if (params.savePredictions) saveResult(sqlCtx, result)
     }
     else {
       val gridParam = new ParamGridBuilder()
-//        .addGrid(rf.numTrees, Array(100, 200))
+        .addGrid(rf.numTrees, Array(100, 200))
         .addGrid(rf.maxDepth, Array(10, 20, 30))
         .addGrid(rf.minInstancesPerNode, Array(5, 10))
         .build()
@@ -163,12 +174,12 @@ object DigitClassifierInRF extends MyTraining60000 {
           .setEstimatorParamMaps(gridParam)
           .setNumFolds(3)
 
-        val (trainingDuration, cvModel) = MyMLUtil.time(cv.fit(trainingData))
+        val (trainingDuration, cvModel) = MyMLUtil.time(cv.fit(training))
 
         //val cvModel = CrossValidatorModel.load("data/model/lr-model")
         if (params.saveModel) cvModel.save("data/model/rf-model")
 
-        val (predictionDuration, predictions) = MyMLUtil.time(cvModel.transform(testingData))
+        val (predictionDuration, predictions) = MyMLUtil.time(cvModel.transform(testing))
 
         println("Best Model:")
         println(cvModel.bestModel.explainParams)
@@ -188,8 +199,8 @@ object DigitClassifierInRF extends MyTraining60000 {
           // 80% of the data will be used for training and the remaining 20% for validation.
           .setTrainRatio(0.8)
 
-        val (trainingDuration, predModel) = MyMLUtil.time(trainValidationSplit.fit(trainingData))
-        val (predictionDuration, predictions) = MyMLUtil.time(predModel.transform(testingData))
+        val (trainingDuration, predModel) = MyMLUtil.time(trainValidationSplit.fit(training))
+        val (predictionDuration, predictions) = MyMLUtil.time(predModel.transform(testing))
 
         println("Best Model:")
         println(predModel.bestModel.explainParams())
@@ -237,13 +248,13 @@ object DigitClassifierInRF extends MyTraining60000 {
       .write
       .format("com.databricks.spark.csv")
       .options(Map("header" -> "true", "inferSchema" -> "true"))
-      .save("data/mapping_csv")
+      .save("data/test/mapping_csv")
 
     result
       .coalesce(1)
       .write
       .format("com.databricks.spark.csv")
       .options(Map("header" -> "true", "inferSchema" -> "true"))
-      .save("data/rf_csv")
+      .save("data/test/rf_csv")
   }
 }

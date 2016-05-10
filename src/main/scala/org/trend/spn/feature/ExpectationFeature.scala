@@ -19,7 +19,7 @@ object ExpectationFeature extends App {
   val sc = new SparkContext(sparkConf)
   val sqlCtx = new SQLContext(sc)
 
-//  val data = MyMLUtil.loadLabelData(sqlCtx, "data/train/training_data.txt").toDF("label", "features")
+  val test = MyMLUtil.loadLabelFeatures(sqlCtx, "data/test/testing_20x20_all.txt")
   val data = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/training_60000.txt")
 
   val expect = new ExpectationScaler()
@@ -32,8 +32,9 @@ object ExpectationFeature extends App {
     .setOutputCol("expFeatures")
 
   val model = new Pipeline().setStages(Array(expect, normalizer)).fit(data)
-  val transformData = model.transform(data).select("name", "label", "expFeatures")
+  val transformData = model.transform(test).select("name", "label", "expFeatures")
+  transformData.show()
   println("Count:" + transformData.select("expFeatures").distinct().count())
-  transformData.write.parquet("data/train/features/expFeat_60000_20x20.parquet")
+  transformData.write.parquet("data/test/features/expFeat_20x20_all.parquet")
   sc.stop()
 }

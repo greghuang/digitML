@@ -13,7 +13,8 @@ import java.nio.file.Paths;
  * "20" "20" "data/train/resample_20_20" "data/train/train_resample_20x20.txt" "data/train.csv"
  * "20" "20" "data/train/pinch_edge_20x20" "data/train/train_pinch_edge_20x20.txt" "data/train.csv"
  * "20" "20" "data/train/zigzag_20_20" "data/train/train_zigzag_20x20.txt" "data/train.csv"
- * "20" "20" "data/test/testing_20x20" "data/test/testing_20x20.txt"
+ * "20" "20" "data/test/testing_20x20" "data/test/testing_20x20_50000-1.txt"
+ * "20" "20" "data/train/noise_20x20" "data/train/train_noise_20x20.txt" "data/train.csv"
  */
 public class ProcessPipeline {
     public static void main(String[] args) {
@@ -26,7 +27,7 @@ public class ProcessPipeline {
         final int height = Integer.parseInt(args[1]);
         final String inputFolder = args[2];
         final String tmpRawFolder = "/tmp/"+System.currentTimeMillis();
-        final String prefix = "pin";
+        final String prefix = "";
         final String outputFile = args[3];
         final String labelFile = args.length == 5 ? args[4] : null;
 
