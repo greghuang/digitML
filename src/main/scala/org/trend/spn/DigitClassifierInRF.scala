@@ -30,6 +30,7 @@ import scopt.OptionParser
   * ==== 60000 training data ====
   * [5/8 03:00] Test Error = 0.007518941579169991, Recall:0.99248105842083, Training Time 1038 sec
   * [5/10 23:48] Test Error = 0.00790483351649407, Recall:0.9920951664835059, Training Time 870 sec, expF20x20 + proF20x20-2 + 100 trees, max_depth=30, min_node=5
+  * [5/11 01:00] Test Error = 0.03140725316675341, Recall:0.9685927468332466, Training Time 251 sec, expF20x20 + proF20x20-2 + 100 trees, max_depth=15, min_node=5
   * Best Result:
   *
   * -Xms10240m -Xmx10240m
@@ -41,9 +42,9 @@ object DigitClassifierInRF extends DigitDataSet {
                     saveModel: Boolean = false,
                     savePredictions: Boolean = false,
                     isRealTesting: Boolean = false,
-                    maxDepth: Int = 30,
+                    maxDepth: Int = 15,
                     minLeafNodes: Int = 5,
-                    numTrees: Int = 100
+                    numTrees: Int = 150
                    ) extends AbstractParams[Params]
 
 //  def main(args: Array[String]) {
@@ -51,29 +52,24 @@ object DigitClassifierInRF extends DigitDataSet {
 
     val parser = new OptionParser[Params]("DigitClassifierInRF") {
       head("DigitClassifierInRF: an classifier for digit by RandomForest.")
-      //      opt[String]("ratings")
-      //        .required()
-      //        .text("path to a MovieLens dataset of ratings")
-      //        .action((x, c) => c.copy(ratings = x))
-      //      opt[Int]("rank")
-      //        .text(s"rank, default: ${defaultParams.rank}")
-      //        .action((x, c) => c.copy(rank = x))
-      //      opt[Int]("maxIter")
-      //        .text(s"max number of iterations, default: ${defaultParams.maxIter}")
-      //        .action((x, c) => c.copy(maxIter = x))
-      //      opt[Double]("regParam")
-      //        .text(s"regularization parameter, default: ${defaultParams.regParam}")
-      //        .action((x, c) => c.copy(regParam = x))
+            opt[Int]("maxDepth")
+              .text(s"maxDepth, default: ${defaultParams.maxDepth}")
+              .action((x, c) => c.copy(maxDepth = x))
+            opt[Int]("numTrees")
+              .text(s"max number of tree, default: ${defaultParams.numTrees}")
+              .action((x, c) => c.copy(numTrees = x))
+            opt[Int]("minLeafNodes")
+              .text(s"minimun of leaf nodes, default: ${defaultParams.minLeafNodes}")
+              .action((x, c) => c.copy(minLeafNodes = x))
       note(
         """
           |Example command line to run this app:
           |
           | bin/spark-submit --class org.trend.spn.DigitClassifierInRF \
-          |  target/scala-*/digitml_2.11-*.jar \
+          |  target/scala-2.10/digitML-assembly-1.0.jar \
           |  --maxDepth 15
-          |  --rank 10 --maxIter 15 --regParam 0.1 \
-          |  --movies data/mllib/als/sample_movielens_movies.txt \
-          |  --ratings data/mllib/als/sample_movielens_ratings.txt
+          |  --numTrees 100
+          |  --minLeafNodes 5
         """.stripMargin)
     }
 

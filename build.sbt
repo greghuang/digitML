@@ -2,7 +2,7 @@ name := "digitML"
 
 version := "1.0"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.10.5"
 
 resolvers ++= Seq(
   Resolver.defaultLocal,
@@ -13,7 +13,7 @@ resolvers ++= Seq(
 
 val sparkVersion = "1.6.1"
 
-val sparkDependencyScope = "compile"
+val sparkDependencyScope = "provided"
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % sparkDependencyScope,
