@@ -1,16 +1,16 @@
 package org.trend.spn.feature
 
 import org.apache.spark.ml.feature.{PCA, ProjectTransformer}
+import org.trend.spn.dataset.{MnistDataSet, TrainDataSet}
 import org.trend.spn.{MyMLUtil, MySparkApp}
 
 /**
   * Created by greghuang on 5/7/16.
   */
-object ProjectFeature extends MySparkApp {
+object ProjectFeature extends MySparkApp with MnistDataSet with TrainDataSet {
 
-  //  val df = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/features/projectFeatures.txt").toDF("name", "label", "projFeature")
-  val data = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/training_60000.txt")
-//  val data = MyMLUtil.loadLabelFeatures(sqlCtx, "data/test/testing_20x20_all.txt")
+  val data = training.cache()
+
   data.printSchema()
   println("Count:" + data.select("features").distinct().count())
 
@@ -18,22 +18,21 @@ object ProjectFeature extends MySparkApp {
     .setInputCol("features")
     .setOutputCol("projFeatures")
 
-  val trans = transformer.transform(data)
-  println("Count:" + trans.select("projFeatures").distinct().count())
-  trans.select("name", "label", "projFeatures").show()
+  val projTrans = transformer.transform(training)
+  val projMnint = transformer.transform(mnist)
+  println("Count:" + projTrans.select("projFeatures").distinct().count())
+  projTrans.select("name", "label", "projFeatures").show()
 
 
   import sqlCtx.implicits._
 
-  trans
+  projTrans
     .select($"name", $"label", $"projFeatures")
-    //.write.parquet("data/test/features/projectFeat_all_20x20.parquet")
-    .write.parquet("data/train/features/projectFeat_60000_20x20_2.parquet")
+    .write.parquet("data/train/features/projectFeat_80000_countour.parquet")
 
-
-  //  df
-  //    .select($"name", $"projFeature")
-  //    .write.parquet("data/train/features/proj_feature.parquet")
+//  projMnint
+//    .select($"name", $"label", $"projFeatures")
+//    .write.parquet("data/mnist/features/projectFeat_60000_20x20.parquet")
 
   sc.stop()
 }

@@ -68,6 +68,10 @@ public class MnistImgManager {
         RawImgConvertor.writeSingleTextFile(bw, label, image, filename);
     }
 
+    public void writeLabelInFile(BufferedWriter bw, int label, String filename) {
+        RawImgConvertor.writeLabeltoFile(bw, label, filename);
+    }
+
 
 //    public void showImage(int[] image) throws IOException {
 //        BufferedWriter ppmOut = null;
@@ -92,21 +96,27 @@ public class MnistImgManager {
     public static void main(String[] args) throws IOException {
         BufferedWriter bw = null;
 
+        if (args.length < 3) System.exit(1);
+
         try {
             MnistImgManager manager = new MnistImgManager(args[0], args[1]);
-            String formatStr = "mnist%05d";
+//            String formatStr = "mnist%05d";
+            String formatStr = "%d";
 
             Path out = Paths.get(args[2]);
             if (out.toFile().exists()) out.toFile().delete();
 
             bw = Files.newBufferedWriter(out);
 
-            for (int i = 1; i <= 60000; i++) {
+            for (int i = 0; i < 60000; i++) {
                 int[] image = manager.readImage(i);
-                int label = manager.readLabel(i);
-                manager.writeImgInFile(bw, label, image, String.format(formatStr, i));
+                int label = manager.readLabel(i+1);
+                String filename = String.format(formatStr, i);
+                manager.writeLabelInFile(bw, label, filename);
+//                manager.writeImgInFile(bw, label, image, String.format(formatStr, i));
 //                manager.writeImgInLibsvm(bw, label, image);
 //                manager.writeImgToBitmap(Paths.get(args[2] + "/" + i + ".bmp").toFile(), manager.readImage(i));
+                System.out.println("Convert " + String.format(formatStr, i));
             }
             bw.close();
         } catch (IOException e) {

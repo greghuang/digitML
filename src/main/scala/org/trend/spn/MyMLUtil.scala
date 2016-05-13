@@ -1,5 +1,6 @@
 package org.trend.spn
 
+import java.io.File
 import java.util.concurrent.TimeUnit.{NANOSECONDS => NANO}
 
 import org.apache.spark.{SparkConf, SparkContext}
@@ -28,7 +29,7 @@ object MyMLUtil {
     val df = sqlCtx.read.text(path)
     df.map(row => {
       val splitted = row.getString(0).split(sep)
-      val feature = splitted.drop(2).map(_.toDouble)
+      val feature = splitted.drop(2).map(_.toDouble/255.0)
       FeatureImage(splitted(0), splitted(1).toDouble, Vectors.dense(feature))
     }).toDF()
   }
@@ -83,6 +84,13 @@ object MyMLUtil {
   def showDataFrame(df : DataFrame): Unit = {
     println("Schema::" + df.schema)
     df.collect().foreach(println)
+  }
+
+  def deleteFolder(dir: String):Unit = {
+    val d = new File(dir)
+    if (d.exists && d.isDirectory) {
+      d.delete()
+    }
   }
 
   // For testing

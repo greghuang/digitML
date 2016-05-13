@@ -10,6 +10,7 @@ import breeze.linalg.{DenseMatrix => BDM}
 trait Kernel extends java.io.Serializable {
   def matrix: Matrix
   def factor: Int
+  def bias: Double
 }
 
 object Kernel {
@@ -21,6 +22,7 @@ object Kernel {
       (0.0, -1.0, 0.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class Blur3x3 extends Kernel {
@@ -30,6 +32,7 @@ object Kernel {
       (1.0, 1.0, 1.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 9
+    override def bias : Double = 0.0
   }
 
   private class Edge3x3 extends Kernel {
@@ -39,6 +42,7 @@ object Kernel {
       (0.0, -1.0, 0.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class EdgeV3x3 extends Kernel {
@@ -48,6 +52,7 @@ object Kernel {
       (0.0, -1.0, 0.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class EdgeH3x3 extends Kernel {
@@ -57,6 +62,7 @@ object Kernel {
       (0.0, 0.0, 0.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class GradientH3x3 extends Kernel {
@@ -66,6 +72,7 @@ object Kernel {
       (1.0, 1.0, 1.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class GradientV3x3 extends Kernel {
@@ -75,6 +82,7 @@ object Kernel {
       (-1.0, 0.0, 1.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class SobelV3x3 extends Kernel {
@@ -84,6 +92,7 @@ object Kernel {
       (1.0, 0.0, -1.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class SobelH3x3 extends Kernel {
@@ -93,6 +102,7 @@ object Kernel {
       (-1.0, -2.0, -1.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   private class Emboss3x3 extends Kernel {
@@ -102,6 +112,7 @@ object Kernel {
       (0.0, 1.0, 2.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 128.0
   }
 
   private class Identical3x3 extends Kernel {
@@ -111,6 +122,7 @@ object Kernel {
       (0.0, 0.0, 0.0))
     override def matrix: Matrix = Matrices.dense(bm.rows, bm.cols, bm.toArray)
     override def factor: Int = 1
+    override def bias : Double = 0.0
   }
 
   def apply(s: String): Kernel = {

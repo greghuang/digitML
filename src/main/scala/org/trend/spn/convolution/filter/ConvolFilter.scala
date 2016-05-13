@@ -57,7 +57,7 @@ class ConvolFilter(val kernel: Kernel) extends java.io.Serializable {
     for (j <- 1 to (data.numRows - 2))
       for (i <- 1 to (data.numCols - 2)) {
         val sliceMat = MatrixUtil.slice3x3Block(data, j, i)
-        bdm(j - 1, i - 1) = MatrixUtil.convolOp(sliceMat, covMat) / kernel.factor
+        bdm(j - 1, i - 1) = MatrixUtil.convolOp(sliceMat, covMat) / kernel.factor + kernel.bias
       }
     MatrixUtil.fromBreeze(bdm)
   }

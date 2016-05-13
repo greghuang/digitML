@@ -65,7 +65,7 @@ class ConvolutionTransformer(override val uid: String) extends Transformer
   override def transform(dataset: DataFrame): DataFrame = {
     val cf = new ConvolFilter(convKernel)
 
-    val convolutionft = udf { (input: Vector) =>
+    val convolutionft1 = udf { (input: Vector) =>
       val dimension = math.sqrt(input.size).toInt
       //println(s"Dimension:$dimension")
       val rawMat = Matrices.dense(dimension, dimension, input.toArray).transpose
@@ -85,8 +85,12 @@ class ConvolutionTransformer(override val uid: String) extends Transformer
       Vectors.dense(buf.toArray)
     }
 
+//    val convolFilter2 = udf { (input: Vector) =>
+//
+//    }
+
     //    dataset.select(col("*"), convolutionft(dataset($(inputCol))).as($(outputCol)))
-    dataset.withColumn($(outputCol), convolutionft(dataset($(inputCol))))
+    dataset.withColumn($(outputCol), convolutionft1(dataset($(inputCol))))
   }
 
   override def copy(extra: ParamMap): ConvolutionTransformer = {

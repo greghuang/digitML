@@ -4,23 +4,17 @@ import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature._
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.trend.spn.MyMLUtil
+import org.trend.spn.dataset.{MnistDataSet, TrainDataSet}
+import org.trend.spn.{MyMLUtil, MySparkApp}
 
 /**
   * Created by greghuang on 4/27/16.
   */
-object ExpectationFeature extends App {
-  val sparkConf = new SparkConf(false)
-    .setMaster("local[*]")
-    .setAppName("MySpark")
-    .set("spark.driver.port", "7777")
-    .set("spark.driver.host", "localhost")
+object ExpectationFeature extends MySparkApp with TrainDataSet with MnistDataSet{
+//  MyMLUtil.deleteFolder("data/train/features/expFeat_20x20_all.parquet")
+//  MyMLUtil.deleteFolder("data/mnist/features/expFeat_20x20_all.parquet")
 
-  val sc = new SparkContext(sparkConf)
-  val sqlCtx = new SQLContext(sc)
-
-  val test = MyMLUtil.loadLabelFeatures(sqlCtx, "data/test/testing_20x20_all.txt")
-  val data = MyMLUtil.loadLabelFeatures(sqlCtx, "data/train/training_60000.txt")
+//  val test = MyMLUtil.loadLabelFeatures(sqlCtx, "data/test/testing_20x20_all.txt")
 
   val expect = new ExpectationScaler()
     .setInputCol("features")
@@ -31,10 +25,14 @@ object ExpectationFeature extends App {
     .setInputCol("scaledFeatures")
     .setOutputCol("expFeatures")
 
-  val model = new Pipeline().setStages(Array(expect, normalizer)).fit(data)
-  val transformData = model.transform(test).select("name", "label", "expFeatures")
-  transformData.show()
-  println("Count:" + transformData.select("expFeatures").distinct().count())
-  transformData.write.parquet("data/test/features/expFeat_20x20_all.parquet")
+  val model = new Pipeline().setStages(Array(expect, normalizer)).fit(training)
+  val expTrain = model.transform(training).select("name", "label", "expFeatures")
+  val expMnist = model.transform(mnist).select("name", "label", "expFeatures")
+
+  //transformData.show()
+  println("Count:" + expTrain.select("expFeatures").distinct().count())
+
+  expTrain.write.parquet("data/train/features/expFeat_80000_countour.parquet")
+//  expMnist.write.parquet("data/mnist/features/expFeat_60000_20x20.parquet")
   sc.stop()
 }

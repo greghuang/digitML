@@ -37,6 +37,9 @@ public class RawImgConvertor {
             Path p = Paths.get(inFile);
             if (p.toFile().isHidden()) continue;
 
+            //String.format(prefix, Integer.parseInt(file));
+            String filename = prefix+file;
+
             System.out.println("Write "+inFile);
 
             int label = getLabel(file);
@@ -46,7 +49,7 @@ public class RawImgConvertor {
                 if (isLibsvm)
                     writeFileInLibsvm(bw, label, txtData);
                 else
-                    writeSingleTextFile(bw, label, txtData, prefix+file);
+                    writeSingleTextFile(bw, label, txtData, filename);
 
                 cnt++;
             }
@@ -116,6 +119,27 @@ public class RawImgConvertor {
             for (int i = 0; i < data.length; i++) {
                 sb.append(sep).append(data[i]);
             }
+            try {
+                bw.write(sb.toString());
+                bw.newLine();
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void writeLabeltoFile(BufferedWriter bw, int label, String filename) {
+        if (bw != null) {
+            final String sep = " ";
+            sb.setLength(0);
+
+            if (filename != null && !filename.equals(""))
+                sb.append(filename).append(sep);
+
+            // insert label
+            sb.append(label);
+
             try {
                 bw.write(sb.toString());
                 bw.newLine();

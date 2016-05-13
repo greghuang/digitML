@@ -1,5 +1,6 @@
 package org.trend.spn
 
+import org.apache.spark.sql.functions._
 import org.apache.spark.examples.mllib.AbstractParams
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
@@ -10,6 +11,7 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.{SparkConf, SparkContext}
+import org.trend.spn.dataset.{MnistDataSet, TestingDataSet, TrainDataSet}
 import scopt.OptionParser
 
 /**
@@ -31,11 +33,16 @@ import scopt.OptionParser
   * [5/8 03:00] Test Error = 0.007518941579169991, Recall:0.99248105842083, Training Time 1038 sec
   * [5/10 23:48] Test Error = 0.00790483351649407, Recall:0.9920951664835059, Training Time 870 sec, expF20x20 + proF20x20-2 + 100 trees, max_depth=30, min_node=5
   * [5/11 01:00] Test Error = 0.03140725316675341, Recall:0.9685927468332466, Training Time 251 sec, expF20x20 + proF20x20-2 + 100 trees, max_depth=15, min_node=5
+  * [5/11 23:44] Precision = 0.984019797496713, F1:0.9840917109044018, Training Time 794 sec, expF20x20 + proF20x20-2 + 1 convol(pca 60) + 100 trees, max_depth=15, min_node=5
+  * ==== 60000 training data against Mnist 600000 data ====
+  * Precision = 0.9208833333333334, F1:0.9214101771903178, Training Time 888 sec, expF20x20 + proF20x20-2 + 1 convol(pca 60) + 100 trees, max_depth=15, min_node=5
+  * ==== 80000 training data against Mnist 600000 data ====
+  * Precision = 0.9212166666666667, F1:0.9217449274571532, Training Time 915 sec, expF20x20 + proF20x20-2 + 1 convol(pca 60) + 100 trees, max_depth=15, min_node=5
   * Best Result:
   *
   * -Xms10240m -Xmx10240m
   */
-object DigitClassifierInRF extends DigitDataSet {
+object DigitClassifierInRF extends MySparkApp with TrainDataSet with MnistDataSet {
 
   case class Params(crossValidation: Boolean = false,
                     singleModel: Boolean = true,
@@ -44,7 +51,7 @@ object DigitClassifierInRF extends DigitDataSet {
                     isRealTesting: Boolean = false,
                     maxDepth: Int = 15,
                     minLeafNodes: Int = 5,
-                    numTrees: Int = 150
+                    numTrees: Int = 100
                    ) extends AbstractParams[Params]
 
 //  def main(args: Array[String]) {
@@ -74,6 +81,7 @@ object DigitClassifierInRF extends DigitDataSet {
     }
 
     parser.parse(args, defaultParams).map { params =>
+      println(params)
       run(params)
     } getOrElse {
       System.exit(1)
@@ -89,18 +97,11 @@ object DigitClassifierInRF extends DigitDataSet {
     //val data3 = sqlCtx.read.parquet("data/train/features/convol6filter_pca300.parquet/").toDF("name3", "convol_emboss", "convol_sobelH", "convol_sobelV", "convol_gradientV", "convol_gradientH", "convol_edge").cache()
 //    val data3 = sqlCtx.read.parquet("data/train/features/convol6filter.parquet/").toDF("name3", "convol_emboss", "convol_sobelH", "convol_sobelV", "convol_gradientV", "convol_gradientH", "convol_edge").cache()
 
-//    val data = data1
-//      .join(data2, $"name" === $"name2")
-//      //.withColumn("features1", TupleUDF.mergeCol($"expFeatures", $"proFeatures"))
-//      .join(data3, $"name" === $"name3")
-//      .withColumn("features", TupleUDF.merge8Col($"expFeatures", $"proFeatures", $"convol_emboss", $"convol_sobelH", $"convol_sobelV", $"convol_gradientV", $"convol_gradientH", $"convol_edge"))
-//      .select("name", "label", "features")
-//      .repartition(5)
-//      .cache()
 
     import sqlCtx.implicits._
 
     TrainData.printSchema()
+    println("Count:" + TrainData.count())
     //println(training.first())
 
     val labelIndexer = new StringIndexer()
@@ -108,17 +109,16 @@ object DigitClassifierInRF extends DigitDataSet {
       .setOutputCol("indexedLabel")
       .fit(TrainData)
 
-//    val featureIndexer = new VectorIndexer()
-//      .setInputCol("features")
-//      .setOutputCol("indexedFeatures")
-//      .setMaxCategories(2)
-//      .fit(data)
+    val featureIndexer = new VectorIndexer()
+      .setInputCol("features")
+      .setOutputCol("indexedFeatures")
+      .setMaxCategories(2)
+      .fit(TrainData)
 
     val Array(splitTrain, splitTest) = TrainData.randomSplit(Array(0.8, 0.2), seed = 1234L)
 
-    val training = if (params.isRealTesting) TrainData.cache() else splitTrain
-    val testing = splitTest
-//    val testing = if (params.isRealTesting) TestingData.cache() else splitTest
+    val training = if (params.isRealTesting) TrainData else splitTrain
+    val testing = if (params.isRealTesting) TestingData else splitTest
 
     //    val rf = new RandomForestClassifier()
     //      .setLabelCol("indexedLabel")
@@ -127,12 +127,11 @@ object DigitClassifierInRF extends DigitDataSet {
 
     val rf = new RandomForestClassifier()
       .setLabelCol("indexedLabel")
-      .setFeaturesCol("features")
+      .setFeaturesCol("indexedFeatures")
       .setNumTrees(params.numTrees)
       .setMaxDepth(params.maxDepth)
       .setMinInstancesPerNode(params.minLeafNodes)
-      .setMaxMemoryInMB(2024)
-//      .setMinInfoGain(0.05)
+      .setMaxMemoryInMB(3096)
 
 
     val labelConvertor = new IndexToString()
@@ -140,7 +139,7 @@ object DigitClassifierInRF extends DigitDataSet {
       .setOutputCol("predictedLabel")
       .setLabels(labelIndexer.labels)
 
-    val pipeline = new Pipeline().setStages(Array(labelIndexer, rf, labelConvertor))
+    val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConvertor))
 
     if (params.singleModel) {
       val (trainingDuration, predModel) = MyMLUtil.time(pipeline.fit(training))
@@ -152,7 +151,7 @@ object DigitClassifierInRF extends DigitDataSet {
 //            println(s"($label) -> $scaleF   $normF")
 //        }
 
-      if (!params.isRealTesting)
+//      if (!params.isRealTesting)
         evaluate(trainingDuration, predictionDuration, predictions)
 
       val result = predictions.select("name", "predictedLabel", "prediction", "probability")
@@ -226,14 +225,21 @@ object DigitClassifierInRF extends DigitDataSet {
     val evaluator2 = new MulticlassClassificationEvaluator()
       .setLabelCol("indexedLabel")
       .setPredictionCol("prediction")
-      .setMetricName("recall")
+      .setMetricName("f1")
 
-    val recall = evaluator2.evaluate(predictions)
+    val f1 = evaluator2.evaluate(predictions)
 
+    import sqlCtx.implicits._
 
-    print("Test Error = " + (1.0 - accuracy))
-    print(", Recall:" + recall)
+    print("Precision = " + accuracy)
+    print(", F1:" + f1)
     println(s", Training Time ${trainingDuration} sec")
+
+    val diff = predictions.filter($"indexedLabel" !== $"prediction")
+    diff.select("name", "label", "predictedLabel").show(50)
+    val count = diff.groupBy("indexedLabel", "prediction").count
+    count.orderBy($"count".desc).show(false)
+    count.agg(sum("count")).show()
   }
 
   def saveResult(sqlCtx: SQLContext, result: DataFrame) {

@@ -14,9 +14,8 @@ trait MySparkApp extends App {
     .setMaster("local[*]")
     .setAppName("MySpark")
     .set("spark.driver.port", "7777")
-    .set("spark.driver.host", "localhost")
-    .set("spark.driver.memory", "8g")
-    .set("spark.executor.memory", "4g"))
+    .set("spark.driver.host", "localhost"))
+
   final val sqlCtx = new SQLContext(sc)
 
 //  val testingSamples: DataFrame = {

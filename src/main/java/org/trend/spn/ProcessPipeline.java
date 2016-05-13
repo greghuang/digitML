@@ -27,7 +27,8 @@ public class ProcessPipeline {
         final int height = Integer.parseInt(args[1]);
         final String inputFolder = args[2];
         final String tmpRawFolder = "/tmp/"+System.currentTimeMillis();
-        final String prefix = "tra";
+        //final String prefix = "mnist%05d";
+        final String prefix = "";
         final String outputFile = args[3];
         final String labelFile = args.length == 5 ? args[4] : null;
 
