@@ -3,3 +3,6 @@ data/
 project/
 target/
 .DS_Store
+metastore_db/
+.com.greenworldsoft.syncfolderspro
+derby.log
